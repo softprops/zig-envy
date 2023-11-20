@@ -113,6 +113,7 @@ const BOOLS = [_]struct { key: []const u8, value: bool }{
 fn parseValue(comptime T: type, value: []const u8, allocator: std.mem.Allocator) !T {
     return switch (@typeInfo(T)) {
         .Int => try std.fmt.parseInt(T, value, 10),
+        .Float => try std.fmt.parseFloat(T, value),
         .Pointer => parsePointer(T, value, allocator),
         .Bool => {
             inline for (BOOLS) |pair| {
@@ -158,12 +159,13 @@ fn parsePointer(comptime T: type, value: []const u8, allocator: std.mem.Allocato
 test "from hash map" {
     var allocator = std.testing.allocator;
     const Enum = enum { foo, bar };
-    const Test = struct { int: u32, str: []const u8, boolean: bool, enummy: Enum, opt: ?[]const u8 = null, default: []const u8 = "default" };
+    const Test = struct { int: u32, str: []const u8, boolean: bool, enummy: Enum, float: f16, opt: ?[]const u8 = null, default: []const u8 = "default" };
     var env = std.StringHashMap([]const u8).init(allocator);
     defer env.deinit();
     try env.put("APP_INT", "1");
     try env.put("APP_STR", "str");
     try env.put("APP_BOOLEAN", "true");
+    try env.put("APP_FLOAT", "1.0");
     try env.put("APP_ENUMMY", "bar");
-    try std.testing.expect(std.meta.eql(Test{ .boolean = true, .int = 1, .str = "str", .enummy = Enum.bar }, try fromHashMap(Test, env, allocator, .{ .prefix = "APP_" })));
+    try std.testing.expect(std.meta.eql(Test{ .boolean = true, .int = 1, .float = 1.0, .str = "str", .enummy = Enum.bar }, try fromHashMap(Test, env, allocator, .{ .prefix = "APP_" })));
 }
