@@ -115,7 +115,7 @@ fn parseValue(comptime T: type, value: []const u8, allocator: std.mem.Allocator)
         .Int => try std.fmt.parseInt(T, value, 10),
         .Pointer => parsePointer(T, value, allocator),
         .Bool => {
-            for (BOOLS) |pair| {
+            inline for (BOOLS) |pair| {
                 if (std.mem.eql(u8, pair.key, value)) {
                     return pair.value;
                 }
