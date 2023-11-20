@@ -1,6 +1,19 @@
-# envy
+<h1 align="center">
+    envy
+</h1>
 
-deserialize environment variables into typesafe structs
+<div align="center>
+    deserialize environment variables into typesafe structs
+</div>
+
+[![Main](https://github.com/softprops/zig-envy/actions/workflows/main.yml/badge.svg)](https://github.com/softprops/zig-envy/actions/workflows/main.yml) ![License Info](https://img.shields.io/github/license/softprops/zig-envy) ![Release](https://img.shields.io/github/v/release/softprops/zig-envy)
+
+## 🍬 features
+
+- fail fast on faulty application configuration
+- supports parsable std lib types out of the box
+
+## examples
 
 ```zig
 const std = @import("std");
