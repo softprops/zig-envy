@@ -1,6 +1,8 @@
 const std = @import("std");
 const testing = std.testing;
 
+const log = std.log.scoped(.lambda);
+
 pub const Error = error{
     TypeMismatch,
     StructFieldMissing,
@@ -26,10 +28,44 @@ pub const EnvOptions = struct {
 /// The provided T must be a struct type.
 ///
 /// env variables are assumed to be SCREAMING_SNAKE_CASE version ofs of zigs conventional snake_case field names
-pub fn fromEnv(comptime T: type, allocator: std.mem.Allocator, options: EnvOptions) !T {
-    const env = try std.process.getEnvMap(allocator);
+///
+/// example
+///
+///```zig
+/// const std = @import("std");
+/// const envy = @import("envy");
+///
+/// const Config = struct {
+///     foo: u16,
+///     bar: bool,
+///     baz: []const u8,
+///     boom: ?u46
+/// };
+///
+/// pub fn main() !void {
+///     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+///     defer arena.deinit();
+///     const allocator = arena.allocator();
+///
+///     const config = envy.parse(Config, allocator, .{}) catch |err| {
+///         std.debug.print("error parsing config from env: {any}", err);
+///         return;
+///     };
+///     std.debug.println("config {any}", .{ config });
+/// }
+///```
+pub fn parse(comptime T: type, allocator: std.mem.Allocator, options: EnvOptions) !T {
+    var env = try std.process.getEnvMap(allocator);
     defer env.deinit();
-    return try fromHashMap(T, env.hashmap, allocator, options);
+
+    var copy = std.StringHashMap([]const u8).init(allocator);
+    defer copy.deinit();
+    var it = env.iterator();
+    while (it.next()) |entry| {
+        try copy.put(entry.key_ptr.*, entry.value_ptr.*);
+    }
+
+    return try fromHashMap(T, copy, allocator, options);
 }
 
 fn fromHashMap(comptime T: type, env: std.StringHashMap([]const u8), allocator: std.mem.Allocator, options: EnvOptions) !T {
@@ -53,7 +89,7 @@ fn fromHashMap(comptime T: type, env: std.StringHashMap([]const u8), allocator: 
             const dvalue_aligned: *align(field.alignment) const anyopaque = @alignCast(dvalue);
             @field(parsed, field.name) = @as(*const field.type, @ptrCast(dvalue_aligned)).*;
         } else {
-            std.debug.print("missing struct field: {s}: {s}", .{ field.name, @typeName(field.type) });
+            log.debug("missing struct field: '{s}'", .{field.name});
             return error.StructFieldMissing;
         }
     }
@@ -61,7 +97,7 @@ fn fromHashMap(comptime T: type, env: std.StringHashMap([]const u8), allocator: 
     return parsed;
 }
 
-fn parseOptional(comptime T: type, value: ?[]const u8, allocator: std.mem.Allocator) Error!T {
+fn parseOptional(comptime T: type, value: ?[]const u8, allocator: std.mem.Allocator) !T {
     const unwrapped = value orelse return null;
     const opt_info = @typeInfo(T).Optional;
     return @as(T, try parseValue(opt_info.child, unwrapped, allocator));
