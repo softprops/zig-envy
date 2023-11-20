@@ -122,7 +122,18 @@ fn parseValue(comptime T: type, value: []const u8, allocator: std.mem.Allocator)
             }
             return error.InvalidValue;
         },
-        else => error.Unimplemented,
+        .Enum => {
+            inline for (@typeInfo(T).Enum.fields, 0..) |field, i| {
+                if (std.mem.eql(u8, field.name, value)) {
+                    return @enumFromInt(i);
+                }
+            }
+            return error.InvalidValue;
+        },
+        else => {
+            log.err("value type {any} not supported", .{T});
+            return error.Unimplemented;
+        },
     };
 }
 
@@ -146,11 +157,13 @@ fn parsePointer(comptime T: type, value: []const u8, allocator: std.mem.Allocato
 
 test "from hash map" {
     var allocator = std.testing.allocator;
-    const Test = struct { int: u32, str: []const u8, boolean: bool, opt: ?[]const u8 = null, default: []const u8 = "default" };
+    const Enum = enum { foo, bar };
+    const Test = struct { int: u32, str: []const u8, boolean: bool, enummy: Enum, opt: ?[]const u8 = null, default: []const u8 = "default" };
     var env = std.StringHashMap([]const u8).init(allocator);
     defer env.deinit();
     try env.put("APP_INT", "1");
     try env.put("APP_STR", "str");
     try env.put("APP_BOOLEAN", "true");
-    try std.testing.expect(std.meta.eql(Test{ .boolean = true, .int = 1, .str = "str" }, try fromHashMap(Test, env, allocator, .{ .prefix = "APP_" })));
+    try env.put("APP_ENUMMY", "bar");
+    try std.testing.expect(std.meta.eql(Test{ .boolean = true, .int = 1, .str = "str", .enummy = Enum.bar }, try fromHashMap(Test, env, allocator, .{ .prefix = "APP_" })));
 }

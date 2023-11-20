@@ -12,6 +12,7 @@
 
 - fail fast on faulty application configuration
 - supports parsable std lib types out of the box
+- fail at compile time for unsupported field types
 
 ## examples
 
