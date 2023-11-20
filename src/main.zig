@@ -4,9 +4,15 @@ const testing = std.testing;
 
 const log = std.log.scoped(.lambda);
 
+/// Possible errors
 pub const Error = error{
+    /// Missing an env var for a given struct field
     StructFieldMissing,
+    /// A value that does not align with one defined for a given field
     InvalidValue,
+    /// Attempting to parse into an invalid type (must be a struct type)
+    InvalidType,
+    /// A value type not yet implemented
     Unimplemented,
 };
 
@@ -69,32 +75,38 @@ pub fn parse(comptime T: type, allocator: std.mem.Allocator, options: EnvOptions
 }
 
 fn fromHashMap(comptime T: type, env: std.StringHashMap([]const u8), allocator: std.mem.Allocator, options: EnvOptions) !T {
-    const struct_info = @typeInfo(T).Struct;
-    var parsed: T = undefined;
-    inline for (struct_info.fields) |field| {
-        const field_name = try std.ascii.allocUpperString(allocator, field.name);
-        defer allocator.free(field_name);
-        const prefixed = try std.fmt.allocPrint(allocator, "{s}{s}", .{ options.prefix orelse "", field_name });
-        defer allocator.free(prefixed);
-        const value = env.get(prefixed);
+    const info = @typeInfo(T);
+    switch (info) {
+        .Struct => {
+            const struct_info = info.Struct;
+            var parsed: T = undefined;
+            inline for (struct_info.fields) |field| {
+                const field_name = try std.ascii.allocUpperString(allocator, field.name);
+                defer allocator.free(field_name);
+                const prefixed = try std.fmt.allocPrint(allocator, "{s}{s}", .{ options.prefix orelse "", field_name });
+                defer allocator.free(prefixed);
+                const value = env.get(prefixed);
 
-        if (@typeInfo(field.type) == .Optional) {
-            @field(parsed, field.name) = try parseOptional(field.type, value, allocator);
-            continue;
-        }
+                if (@typeInfo(field.type) == .Optional) {
+                    @field(parsed, field.name) = try parseOptional(field.type, value, allocator);
+                    continue;
+                }
 
-        if (value) |unwrapped| {
-            @field(parsed, field.name) = try parseValue(field.type, unwrapped, allocator);
-        } else if (field.default_value) |dvalue| {
-            const dvalue_aligned: *align(field.alignment) const anyopaque = @alignCast(dvalue);
-            @field(parsed, field.name) = @as(*const field.type, @ptrCast(dvalue_aligned)).*;
-        } else {
-            log.debug("missing struct field: '{s}'", .{field.name});
-            return error.StructFieldMissing;
-        }
+                if (value) |unwrapped| {
+                    @field(parsed, field.name) = try parseValue(field.type, unwrapped, allocator);
+                } else if (field.default_value) |dvalue| {
+                    const dvalue_aligned: *align(field.alignment) const anyopaque = @alignCast(dvalue);
+                    @field(parsed, field.name) = @as(*const field.type, @ptrCast(dvalue_aligned)).*;
+                } else {
+                    log.debug("missing struct field: '{s}'", .{field.name});
+                    return error.StructFieldMissing;
+                }
+            }
+
+            return parsed;
+        },
+        else => return error.InvalidType,
     }
-
-    return parsed;
 }
 
 fn parseOptional(comptime T: type, value: ?[]const u8, allocator: std.mem.Allocator) !T {
@@ -154,6 +166,13 @@ fn parsePointer(comptime T: type, value: []const u8, allocator: std.mem.Allocato
         },
         else => return error.Unimplemented,
     }
+}
+
+test "struct not provided" {
+    var allocator = std.testing.allocator;
+    var env = std.StringHashMap([]const u8).init(allocator);
+    defer env.deinit();
+    try std.testing.expect(error.InvalidType == fromHashMap(u8, env, allocator, .{}));
 }
 
 test "from hash map" {
