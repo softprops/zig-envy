@@ -1,10 +1,10 @@
+//! deserialize environment variables into typesafe structs
 const std = @import("std");
 const testing = std.testing;
 
 const log = std.log.scoped(.lambda);
 
 pub const Error = error{
-    TypeMismatch,
     StructFieldMissing,
     InvalidValue,
     Unimplemented,
