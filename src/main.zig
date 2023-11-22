@@ -74,7 +74,12 @@ pub fn parse(comptime T: type, allocator: std.mem.Allocator, options: EnvOptions
     return try fromHashMap(T, copy, allocator, options);
 }
 
-fn fromHashMap(comptime T: type, env: std.StringHashMap([]const u8), allocator: std.mem.Allocator, options: EnvOptions) !T {
+fn fromHashMap(
+    comptime T: type,
+    env: std.StringHashMap([]const u8),
+    allocator: std.mem.Allocator,
+    options: EnvOptions,
+) !T {
     const info = @typeInfo(T);
     switch (info) {
         .Struct => {
@@ -83,17 +88,29 @@ fn fromHashMap(comptime T: type, env: std.StringHashMap([]const u8), allocator: 
             inline for (struct_info.fields) |field| {
                 const field_name = try std.ascii.allocUpperString(allocator, field.name);
                 defer allocator.free(field_name);
-                const prefixed = try std.fmt.allocPrint(allocator, "{s}{s}", .{ options.prefix orelse "", field_name });
+                const prefixed = try std.fmt.allocPrint(
+                    allocator,
+                    "{s}{s}",
+                    .{ options.prefix orelse "", field_name },
+                );
                 defer allocator.free(prefixed);
                 const value = env.get(prefixed);
 
                 if (@typeInfo(field.type) == .Optional) {
-                    @field(parsed, field.name) = try parseOptional(field.type, value, allocator);
+                    @field(parsed, field.name) = try parseOptional(
+                        field.type,
+                        value,
+                        allocator,
+                    );
                     continue;
                 }
 
                 if (value) |unwrapped| {
-                    @field(parsed, field.name) = try parseValue(field.type, unwrapped, allocator);
+                    @field(parsed, field.name) = try parseValue(
+                        field.type,
+                        unwrapped,
+                        allocator,
+                    );
                 } else if (field.default_value) |dvalue| {
                     const dvalue_aligned: *align(field.alignment) const anyopaque = @alignCast(dvalue);
                     @field(parsed, field.name) = @as(*const field.type, @ptrCast(dvalue_aligned)).*;
@@ -112,7 +129,11 @@ fn fromHashMap(comptime T: type, env: std.StringHashMap([]const u8), allocator: 
 fn parseOptional(comptime T: type, value: ?[]const u8, allocator: std.mem.Allocator) !T {
     const unwrapped = value orelse return null;
     const opt_info = @typeInfo(T).Optional;
-    return @as(T, try parseValue(opt_info.child, unwrapped, allocator));
+    return @as(T, try parseValue(
+        opt_info.child,
+        unwrapped,
+        allocator,
+    ));
 }
 
 const BOOLS = [_]struct { key: []const u8, value: bool }{
@@ -172,13 +193,26 @@ test "struct not provided" {
     var allocator = std.testing.allocator;
     var env = std.StringHashMap([]const u8).init(allocator);
     defer env.deinit();
-    try std.testing.expect(error.InvalidType == fromHashMap(u8, env, allocator, .{}));
+    try std.testing.expect(error.InvalidType == fromHashMap(
+        u8,
+        env,
+        allocator,
+        .{},
+    ));
 }
 
 test "from hash map" {
     var allocator = std.testing.allocator;
     const Enum = enum { foo, bar };
-    const Test = struct { int: u32, str: []const u8, boolean: bool, enummy: Enum, float: f16, opt: ?[]const u8 = null, default: []const u8 = "default" };
+    const Test = struct {
+        int: u32,
+        str: []const u8,
+        boolean: bool,
+        enummy: Enum,
+        float: f16,
+        opt: ?[]const u8 = null,
+        default: []const u8 = "default",
+    };
     var env = std.StringHashMap([]const u8).init(allocator);
     defer env.deinit();
     try env.put("APP_INT", "1");
@@ -186,5 +220,16 @@ test "from hash map" {
     try env.put("APP_BOOLEAN", "true");
     try env.put("APP_FLOAT", "1.0");
     try env.put("APP_ENUMMY", "bar");
-    try std.testing.expect(std.meta.eql(Test{ .boolean = true, .int = 1, .float = 1.0, .str = "str", .enummy = Enum.bar }, try fromHashMap(Test, env, allocator, .{ .prefix = "APP_" })));
+    try std.testing.expect(std.meta.eql(Test{
+        .boolean = true,
+        .int = 1,
+        .float = 1.0,
+        .str = "str",
+        .enummy = Enum.bar,
+    }, try fromHashMap(
+        Test,
+        env,
+        allocator,
+        .{ .prefix = "APP_" },
+    )));
 }
