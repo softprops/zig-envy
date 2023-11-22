@@ -45,7 +45,7 @@ pub const EnvOptions = struct {
 ///     foo: u16,
 ///     bar: bool,
 ///     baz: []const u8,
-///     boom: ?u46
+///     boom: ?u64,
 /// };
 ///
 /// pub fn main() !void {

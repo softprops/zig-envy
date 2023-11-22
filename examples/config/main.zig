@@ -1,7 +1,12 @@
 const std = @import("std");
 const envy = @import("envy");
 
-const Config = struct { foo: u16, bar: bool, baz: []const u8, boom: ?u46 };
+const Config = struct {
+    foo: u16,
+    bar: bool,
+    baz: []const u8,
+    boom: ?u64,
+};
 
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
