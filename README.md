@@ -6,6 +6,8 @@
     deserialize environment variables into typesafe structs
 </div>
 
+---
+
 [![Main](https://github.com/softprops/zig-envy/actions/workflows/main.yml/badge.svg)](https://github.com/softprops/zig-envy/actions/workflows/main.yml) ![License Info](https://img.shields.io/github/license/softprops/zig-envy) ![Release](https://img.shields.io/github/v/release/softprops/zig-envy) ![Zig Support](https://img.shields.io/badge/zig-0.11.0-black?logo=zig)
 
 ## 🍬 features
