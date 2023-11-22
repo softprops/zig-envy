@@ -2,7 +2,7 @@
     envy
 </h1>
 
-<div align="center>
+<div align="center">
     deserialize environment variables into typesafe structs
 </div>
 
