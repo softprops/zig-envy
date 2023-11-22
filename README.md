@@ -60,7 +60,7 @@ Create a `build.zig.zon` file to declare a dependency
             // 👇 uri to download
             .url = "https://github.com/softprops/zig-envy/archive/refs/tags/v0.1.0.tar.gz",
             // 👇 hash verification
-            //.hash = "",
+            .hash = "1220291df9249a132159b029196dfea159ab3ea5c615aa7b43316f04c01f488c4b4c",
         }
     }
 }
@@ -78,7 +78,7 @@ pub fn build(b: *std.Build) void {
 
     const optimize = b.standardOptimizeOption(.{});
     // 👇 de-reference envy dep from build.zig.zon
-     const envy = b.dependency("envy", .{
+    const envy = b.dependency("envy", .{
         .target = target,
         .optimize = optimize,
     });
