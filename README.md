@@ -48,7 +48,7 @@ Create a new exec project with `zig init-exe`. Copy the echo handler example abo
 
 Create a `build.zig.zon` file to declare a dependency
 
-> .zon short for "zig object notation" files are essential zig structs. `build.zig.zon` is zigs native package manager convention for where to declare dependencies
+> .zon short for "zig object notation" files are essentially zig structs. `build.zig.zon` is zigs native package manager convention for where to declare dependencies
 
 ```zig
 .{
@@ -61,8 +61,8 @@ Create a `build.zig.zon` file to declare a dependency
             .url = "https://github.com/softprops/zig-envy/archive/refs/tags/v0.1.0.tar.gz",
             // 👇 hash verification
             .hash = "1220291df9249a132159b029196dfea159ab3ea5c615aa7b43316f04c01f488c4b4c",
-        }
-    }
+        },
+    },
 }
 ```
 
