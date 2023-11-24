@@ -136,26 +136,22 @@ fn parseOptional(comptime T: type, value: ?[]const u8, allocator: std.mem.Alloca
     ));
 }
 
-const BOOLS = [_]struct { key: []const u8, value: bool }{
-    .{ .key = "true", .value = true },
-    .{ .key = "1", .value = true },
-    .{ .key = "false", .value = false },
-    .{ .key = "0", .value = false },
-};
+const BOOLS = std.ComptimeStringMap(
+    bool,
+    .{
+        .{ "true", true },
+        .{ "1", true },
+        .{ "false", false },
+        .{ "0", false },
+    },
+);
 
 fn parseValue(comptime T: type, value: []const u8, allocator: std.mem.Allocator) !T {
     return switch (@typeInfo(T)) {
         .Int => try std.fmt.parseInt(T, value, 10),
         .Float => try std.fmt.parseFloat(T, value),
         .Pointer => parsePointer(T, value, allocator),
-        .Bool => {
-            inline for (BOOLS) |pair| {
-                if (std.mem.eql(u8, pair.key, value)) {
-                    return pair.value;
-                }
-            }
-            return error.InvalidValue;
-        },
+        .Bool => BOOLS.get(value) orelse error.InvalidValue,
         .Enum => {
             inline for (@typeInfo(T).Enum.fields, 0..) |field, i| {
                 if (std.mem.eql(u8, field.name, value)) {
