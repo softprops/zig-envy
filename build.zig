@@ -16,7 +16,7 @@ pub fn build(b: *std.Build) !void {
     const optimize = b.standardOptimizeOption(.{});
 
     // create a module to be used internally.
-    var envy_module = b.createModule(.{
+    const envy_module = b.createModule(.{
         .source_file = .{ .path = "src/main.zig" },
     });
 
