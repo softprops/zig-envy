@@ -186,7 +186,7 @@ fn parsePointer(comptime T: type, value: []const u8, allocator: std.mem.Allocato
 }
 
 test "struct not provided" {
-    var allocator = std.testing.allocator;
+    const allocator = std.testing.allocator;
     var env = std.StringHashMap([]const u8).init(allocator);
     defer env.deinit();
     try std.testing.expect(error.InvalidType == fromHashMap(
@@ -198,7 +198,7 @@ test "struct not provided" {
 }
 
 test "from hash map" {
-    var allocator = std.testing.allocator;
+    const allocator = std.testing.allocator;
     const Enum = enum { foo, bar };
     const Test = struct {
         int: u32,

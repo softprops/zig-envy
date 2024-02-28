@@ -17,6 +17,7 @@ pub fn build(b: *std.Build) !void {
 
     // create a module to be used internally.
     const envy_module = b.createModule(.{
+        // fixme(0.12): .source_file -> root_source_file
         .source_file = .{ .path = "src/main.zig" },
     });
 
@@ -73,7 +74,7 @@ pub fn build(b: *std.Build) !void {
             .target = target,
             .optimize = optimize,
         });
-
+        // fixme(0.12): addModule -> root_module.addImport(name, mod)
         exe.addModule("envy", envy_module);
 
         // run the artifact - depending on the example exe
