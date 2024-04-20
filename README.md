@@ -8,7 +8,7 @@
 
 ---
 
-[![Main](https://github.com/softprops/zig-envy/actions/workflows/main.yml/badge.svg)](https://github.com/softprops/zig-envy/actions/workflows/main.yml) ![License Info](https://img.shields.io/github/license/softprops/zig-envy) ![Release](https://img.shields.io/github/v/release/softprops/zig-envy) [![Zig Support](https://img.shields.io/badge/zig-0.11.0-black?logo=zig)](https://ziglang.org/documentation/0.11.0/)
+[![Main](https://github.com/softprops/zig-envy/actions/workflows/main.yml/badge.svg)](https://github.com/softprops/zig-envy/actions/workflows/main.yml) ![License Info](https://img.shields.io/github/license/softprops/zig-envy) ![Release](https://img.shields.io/github/v/release/softprops/zig-envy) [![Zig Support](https://img.shields.io/badge/zig-0.12.0-black?logo=zig)](https://ziglang.org/documentation/0.12.0/)
 
 ## 🍬 features
 
@@ -50,19 +50,20 @@ Create a `build.zig.zon` file to declare a dependency
 
 > .zon short for "zig object notation" files are essentially zig structs. `build.zig.zon` is zigs native package manager convention for where to declare dependencies
 
-```zig
+```diff
 .{
     .name = "my-app",
     .version = "0.1.0",
     .dependencies = .{
-        // 👇 declare dep properties
-        .envy = .{
-            // 👇 uri to download
-            .url = "https://github.com/softprops/zig-envy/archive/refs/tags/v0.1.0.tar.gz",
-            // 👇 hash verification
-            .hash = "1220291df9249a132159b029196dfea159ab3ea5c615aa7b43316f04c01f488c4b4c",
-        },
++        // 👇 declare dep properties
++        .envy = .{
++            // 👇 uri to download
++            .url = "https://github.com/softprops/zig-envy/archive/refs/tags/v0.2.0.tar.gz",
++            // 👇 hash verification
++            .hash = "{current-hash}",
++        },
     },
+    .paths = .{""},
 }
 ```
 
