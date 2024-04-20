@@ -2,7 +2,7 @@
 const std = @import("std");
 const testing = std.testing;
 
-const log = std.log.scoped(.lambda);
+const log = std.log.scoped(.envy);
 
 /// Possible errors
 pub const Error = error{

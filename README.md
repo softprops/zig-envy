@@ -8,7 +8,7 @@
 
 ---
 
-[![Main](https://github.com/softprops/zig-envy/actions/workflows/main.yml/badge.svg)](https://github.com/softprops/zig-envy/actions/workflows/main.yml) ![License Info](https://img.shields.io/github/license/softprops/zig-envy) ![Release](https://img.shields.io/github/v/release/softprops/zig-envy) [![Zig Support](https://img.shields.io/badge/zig-0.11.0-black?logo=zig)](https://ziglang.org/documentation/0.11.0/)
+[![Main](https://github.com/softprops/zig-envy/actions/workflows/main.yml/badge.svg)](https://github.com/softprops/zig-envy/actions/workflows/main.yml) ![License Info](https://img.shields.io/github/license/softprops/zig-envy) ![Release](https://img.shields.io/github/v/release/softprops/zig-envy) [![Zig Support](https://img.shields.io/badge/zig-0.12.0-black?logo=zig)](https://ziglang.org/documentation/0.12.0/)
 
 ## 🍬 features
 
@@ -50,19 +50,20 @@ Create a `build.zig.zon` file to declare a dependency
 
 > .zon short for "zig object notation" files are essentially zig structs. `build.zig.zon` is zigs native package manager convention for where to declare dependencies
 
-```zig
+```diff
 .{
     .name = "my-app",
     .version = "0.1.0",
     .dependencies = .{
-        // 👇 declare dep properties
-        .envy = .{
-            // 👇 uri to download
-            .url = "https://github.com/softprops/zig-envy/archive/refs/tags/v0.1.0.tar.gz",
-            // 👇 hash verification
-            .hash = "1220291df9249a132159b029196dfea159ab3ea5c615aa7b43316f04c01f488c4b4c",
-        },
++        // 👇 declare dep properties
++        .envy = .{
++            // 👇 uri to download
++            .url = "https://github.com/softprops/zig-envy/archive/refs/tags/v0.2.0.tar.gz",
++            // 👇 hash verification
++            .hash = "{current-hash}",
++        },
     },
+    .paths = .{""},
 }
 ```
 
@@ -70,26 +71,26 @@ Create a `build.zig.zon` file to declare a dependency
 
 Add the following in your `build.zig` file
 
-```zig
+```diff
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
 
     const optimize = b.standardOptimizeOption(.{});
-    // 👇 de-reference envy dep from build.zig.zon
-    const envy = b.dependency("envy", .{
-        .target = target,
-        .optimize = optimize,
-    });
++    // 👇 de-reference envy dep from build.zig.zon
++    const envy = b.dependency("envy", .{
++        .target = target,
++        .optimize = optimize,
++    }).module("envy");
     var exe = b.addExecutable(.{
         .name = "your-exe",
-        .root_source_file = .{ .path = "src/main.zig" },
+        .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
     });
-    // 👇 add the envy module to executable
-    exe.addModule("envy", envy.module("envy"));
++    // 👇 add the envy module to executable
++    exe.root_module.addImport("envy", envy);
 
     b.installArtifact(exe);
 }
