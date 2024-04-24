@@ -1,3 +1,7 @@
+# 0.2.1
+
+Fix build.zig.zon package name, previously "env" and now "envy.
+
 # 0.2.0
 
 Upgrade to zig 0.12.0, current stable
