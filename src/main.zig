@@ -82,8 +82,7 @@ fn fromHashMap(
 ) !T {
     const info = @typeInfo(T);
     switch (info) {
-        .Struct => {
-            const struct_info = info.Struct;
+        .Struct => |struct_info| {
             var parsed: T = undefined;
             inline for (struct_info.fields) |field| {
                 const field_name = try std.ascii.allocUpperString(allocator, field.name);
@@ -151,8 +150,8 @@ fn parseValue(comptime T: type, value: []const u8, allocator: std.mem.Allocator)
         .Float => try std.fmt.parseFloat(T, value),
         .Pointer => parsePointer(T, value, allocator),
         .Bool => BOOLS.get(value) orelse error.InvalidValue,
-        .Enum => {
-            inline for (@typeInfo(T).Enum.fields, 0..) |field, i| {
+        .Enum => |info| {
+            inline for (info.fields, 0..) |field, i| {
                 if (std.mem.eql(u8, field.name, value)) {
                     return @enumFromInt(i);
                 }
