@@ -1,3 +1,9 @@
+# 0.3.0
+
+Upgrade to zig 0.13.0, current stable
+
+The main changes where related to a zig breaking change around `std.ComptimeStringMap` which is now called `std.StaticStringMap`
+
 # 0.2.1
 
 Fix build.zig.zon package name, previously "env" and now "envy".

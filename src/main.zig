@@ -136,8 +136,7 @@ fn parseOptional(comptime T: type, value: ?[]const u8, allocator: std.mem.Alloca
     ));
 }
 
-const BOOLS = std.ComptimeStringMap(
-    bool,
+const BOOLS = std.StaticStringMap(bool).initComptime(
     .{
         .{ "true", true },
         .{ "1", true },
